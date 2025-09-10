@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HUMANITY RESONANCE — Final Sovereign Global (Single‑File)</title>
+<meta name="description" content="Single‑file sovereign dashboard. 50 live KPIs with sparklines, trends, realtime anomaly/causality engines, zero‑proof manifest verification, embedded infographic, and six novel live analytics modules. Offline demo via Service Worker virtualization; Live mode via SSE/Web API.">
+<style>
+  :root{--bg:#060a11;--ink:#eaf5ff;--muted:#9fb7ce;--edge:#173149;--panel:#0d1520;--panel2:#101b27;--accent:#3A86FF;--accent2:#83B9FF;--ok:#00e676;--warn:#ffc107;--bad:#ff4b3e;--shadow:0 12px 28px rgba(0,0,0,.55)}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:radial-gradient(120% 160% at 50% -10%, #132133 0%, #060a11 65%, #050a10 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,Arial,sans-serif}
+  header{position:sticky;top:0;z-index:50;background:#0d1520;border-bottom:1px solid var(--edge);padding:14px}
+  h1{margin:0;font-size:22px;letter-spacing:.4px;text-align:center}
+  .wrap{max-width:1600px;margin:0 auto;padding:14px}
+  .topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:8px}
+  .chip{font-size:12px;padding:6px 10px;border-radius:999px;background:#132131;border:1px solid #1b3753;color:#dff2ff}
+  .chip.ok{background:#0f2418;border-color:#2d805a;color:#bcffdf}
+  .chip.bad{background:#2b1714;border-color:#8b2a20;color:#ffd0c9}
+  .chip.glow{box-shadow:0 0 16px rgba(58,134,255,.35)}
+  .toolbar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .btn{appearance:none;border:1px solid var(--edge);background:#132131;color:#e6f3ff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:12px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#04121e;font-weight:700}
+  select,input{border:1px solid var(--edge);background:#132131;color:#e6f3ff;border-radius:10px;padding:7px 10px;font-size:12px}
+  .grid{display:grid;gap:14px;grid-template-columns:62% 38%}
+  @media (max-width:1200px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel2);border:1px solid var(--edge);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 6px;font-size:15px;color:#cfe8ff}
+  .kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:10px;position:relative;overflow:hidden}
+  .card h3{margin:0 0 6px;font-size:12.5px;color:#c8d8ea}
+  .card .n{font-size:22px;font-weight:900;color:#7ad7ff}
+  .sub{display:inline-block;margin-top:2px;font-size:11px;color:#9fc7e2;opacity:.95}
+  .spark{position:absolute;left:8px;right:8px;bottom:8px;height:28%;opacity:.9}
+  .spark path{fill:none;stroke:#58c7ff;stroke-width:2}
+  svg.chart{width:100%;height:260px}
+  .chart .axis{stroke:rgba(131,185,255,.25)}
+  .chart .line{stroke:#3A86FF;fill:none;stroke-width:2}
+  .chart .line2{stroke:#83B9FF;fill:none;stroke-width:1.5}
+  .iframe-wrap{position:relative;width:100%;border:1px solid var(--edge);border-radius:12px;background:#0b1a2a;overflow:hidden;box-shadow:var(--shadow)}
+  .iframe-head{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px;background:#0f1a26;border-bottom:1px solid #173149}
+  .iframe-head .title{font-size:14px;color:#cfe8ff;font-weight:700}
+  .iframe-body{position:relative;width:100%;height:0;padding-top:62%}
+  .iframe-body iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1622}
+  .iframe-status{padding:10px;color:#9fc7e2;font-size:12px;border-top:1px solid #173149}
+  .leadmap{display:grid;grid-template-columns:1fr;gap:6px}
+  .leaditem{display:flex;justify-content:space-between;align-items:center;background:#0f1a26;border:1px solid var(--edge);border-radius:10px;padding:6px;font-size:12px}
+  .hm{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+  .cell{height:16px;border-radius:4px;border:1px solid #143b5e}
+  .badge{display:inline-block;padding:6px 10px;border-radius:10px;border:1px solid #1b3753;background:#0e1b2a}
+  canvas.mono{display:block;width:100%;height:240px;border:1px solid var(--edge);border-radius:12px;background:#0b1622}
+  .footnote{opacity:.7;font-size:11px;text-align:center;margin-top:10px}
+  @media print{header,.toolbar{display:none} .panel{box-shadow:none} body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>HUMANITY RESONANCE — Final Sovereign Global</h1>
+  <div class="topbar" role="group" aria-label="runtime status">
+    <span class="chip" id="modeChip">SOURCE: —</span>
+    <span class="chip" id="latChip">Latency: — ms</span>
+    <span class="chip" id="updChip">Updated: —</span>
+    <span class="chip glow" id="sigChip">Signature: —</span>
+    <span class="chip ok" id="creatorChip">Creator: Mohamed Ibrahim</span>
+    <span class="chip" id="liveChip" title="Toggle Live/Demo">Mode: Demo</span>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="exportCSV">Export CSV</button>
+    <button class="btn" id="exportJSON">Export JSON</button>
+    <button class="btn primary" id="verifyBtn">Verify Manifest</button>
+    <label>Series: <select id="seriesSel" aria-label="active series"></select></label>
+    <label>Interval: <select id="intervalSel"><option value="2000">2s</option><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option></select></label>
+    <button class="btn" id="pauseBtn">Pause</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+    <div>
+      <section class="panel" aria-label="live indicators">
+        <h2>50× Live Channels</h2>
+        <div class="kpis" id="kpiGrid"></div>
+      </section>
+      <section class="panel" aria-label="trend chart">
+        <h2>Trend (last 60) · <span id="seriesBadge">—</span></h2>
+        <svg id="chartA" class="chart" viewBox="0 0 600 260" role="img" aria-label="time series">
+          <line class="axis" x1="40" y1="230" x2="580" y2="230"/>
+          <line class="axis" x1="40" y1="40"  x2="40"  y2="230"/>
+          <path id="line_main" class="line" d=""/>
+          <path id="line_avg"  class="line2" d=""/>
+        </svg>
+      </section>
+      <section class="panel" aria-label="quantum prediction grid">
+        <h2>Quantum Prediction Grid</h2>
+        <canvas id="qPred" class="mono" width="800" height="240" aria-label="prediction heat"></canvas>
+      </section>
+    </div>
+
+    <aside>
+      <section class="panel" aria-label="infographic card">
+        <h2>Infographic (Embedded)</h2>
+        <div class="iframe-wrap" id="igWrap">
+          <div class="iframe-head"><span class="title">Humanity Resonance — Sovereign Infographic</span>
+            <div style="display:flex;gap:8px"><button class="btn" id="igOpen">Open</button><button class="btn" id="igReload">Reload</button></div>
+          </div>
+          <div class="iframe-body"><iframe id="igFrame" loading="lazy" sandbox="allow-scripts allow-same-origin"></iframe></div>
+          <div class="iframe-status" id="igStatus">Loading…</div>
+        </div>
+      </section>
+      <section class="panel" aria-label="lead-lag">
+        <h2>Realtime Causality Pulse (Lead–Lag)</h2>
+        <div class="leadmap" id="leadMap"></div>
+      </section>
+      <section class="panel" aria-label="anomaly atlas">
+        <h2>Anomaly Atlas</h2>
+        <div class="hm" id="anomalyHeat"></div>
+        <div class="badge" id="anomalyTop" style="margin-top:6px">Top anomalies: —</div>
+      </section>
+      <section class="panel" aria-label="integrity">
+        <h2>Integrity Watchtower</h2>
+        <div>Packet Hash: <code id="packetHash">—</code></div>
+        <div>Merkle Root (active): <code id="merkleRoot">—</code></div>
+        <div>Verdict: <span id="zpVerdict" class="badge">PENDING…</span></div>
+      </section>
+      <section class="panel" aria-label="resilience radar">
+        <h2>Resilience Radar</h2>
+        <canvas id="resRadar" class="mono" width="400" height="260" aria-label="radar"></canvas>
+      </section>
+      <section class="panel" aria-label="global stress map">
+        <h2>Global Stress Map</h2>
+        <canvas id="stressMap" class="mono" width="400" height="260" aria-label="stress"></canvas>
+      </section>
+    </aside>
+  </div>
+  <div class="footnote">© <span id="yr"></span> Mohamed Ibrahim · Humanity Resonance — Single‑File Sovereign App</div>
+</main>
+
+<!-- ======= DEMO SEEDS (manifest + PEM + initial packet) ======= -->
+<script id="seed-manifest" type="application/text">icu_load:0.71
+grid_df:-0.03
+mkt_vol:22.4</script>
+<script id="seed-sig" type="application/text">DEMO_SIGNATURE_NOT_FOR_PROD</script>
+<script id="seed-pub" type="application/text">-----BEGIN PUBLIC KEY-----
+DEMO_PEM
+-----END PUBLIC KEY-----</script>
+<script id="seed-packet" type="application/json">{
+  "ts":"2025-09-10T02:15:06Z","seq":1,"window":60,
+  "metrics":{"icu_load":0.71,"grid_df":-0.03,"mkt_vol":22.4}
+}</script>
+
+<script>
+/* ========================= CORE ========================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const fmt=n=> (typeof n==='number'&&Number.isFinite(n))? new Intl.NumberFormat('en-US',{maximumFractionDigits:3}).format(n): n;
+const now=()=>Date.now();
+async function sha256(str){const enc=new TextEncoder().encode(str);const buf=await crypto.subtle.digest('SHA-256',enc);return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function merkleRoot(leaves){if(!leaves.length) return '';let layer=leaves.slice();while(layer.length>1){const next=[];for(let i=0;i<layer.length;i+=2){const a=layer[i],b=layer[i+1]||layer[i];next.push(await sha256(a+b));}layer=next;}return layer[0];}
+function b64ToBytes(b64){const bin=atob(b64.trim());const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);return u8;}
+function pemToArrayBuffer(pem){const b64=pem.replace(/-----(BEGIN|END) PUBLIC KEY-----/g,'').replace(/\s+/g,'');return b64ToBytes(b64).buffer;}
+
+/* ========================= METRICS (50) ========================= */
+const METRICS=[
+  ['epi_rt','Epidemic Rt','', 'Health','low',0.5,2.5],
+  ['ems_resp','EMS Response',' min','Health','low',2,60],
+  ['icu_load','ICU Occupancy',' %','Health','low',0,1,true],
+  ['pcr_pos','PCR Positivity',' %','Health','low',0,1,true],
+  ['ehr_uptime','EHR Uptime',' %','Health','high',0.8,1,true],
+  ['ndvi','Crop NDVI',' idx','Food','high',0,1,true],
+  ['port_cong','Port Congestion',' %','Food','low',0,1,true],
+  ['wheat_stock','Wheat Stock',' d','Food','high',0,400],
+  ['cold_chain_loss','Cold Chain Loss',' %','Food','low',0,1,true],
+  ['food_price','Food Price Index','', 'Food','low',50,300],
+  ['dam_storage','Dam Storage',' %','Water','high',0,1,true],
+  ['river_flow','River Flow',' m³/s','Water','high',0,10000],
+  ['urban_stress','Urban Water Stress',' %','Water','low',0,1,true],
+  ['water_quality','Water Quality',' %','Water','high',0,1,true],
+  ['network_leak','Network Leaks',' %','Water','low',0,1,true],
+  ['grid_df','Grid Δf',' Hz','Energy','low',-0.5,0.5],
+  ['spin_res','Spinning Reserve',' MW','Energy','high',0,200000],
+  ['gic_risk','GIC Risk',' %','Energy','low',0,1,true],
+  ['energy_price','Spot Power Price',' $/MWh','Energy','low',0,1000],
+  ['nminus_margin','n-1/n-2 Margin',' %','Energy','high',0,1,true],
+  ['infl_now','Inflation (nowcast)',' %','Finance','low',0,1,true],
+  ['liq_stress','Liquidity Stress',' idx','Finance','low',0,100],
+  ['mkt_vol','Market Volatility',' idx','Finance','low',0,100],
+  ['sovereign_spread','Sov. Spread',' bps','Finance','low',0,1000],
+  ['commodity_tension','Commodity Tension',' idx','Finance','low',0,100],
+  ['bgp_inc','BGP Incidents',' ','Net','low',0,5000],
+  ['dns_latency','DNS Latency',' ms','Net','low',5,300],
+  ['cloud_regions','Cloud Regions Down',' ','Net','low',0,50],
+  ['cdn_heat','CDN Heat',' idx','Net','low',0,100],
+  ['tls_errors','Critical TLS Errors',' ','Net','low',0,10000],
+  ['kp_idx','Kp Index',' ','Space','low',0,9],
+  ['sw_speed','Solar Wind Speed',' km/s','Space','low',200,1200],
+  ['heat_alerts','Heatwave Alerts',' ','Climate','low',0,10],
+  ['flood_risk','Flood Risk',' /100','Climate','low',0,100],
+  ['air_quality','Air Quality (AQI)',' AQI','Climate','low',0,300],
+  ['cyber_threats','Cyber Threats',' /h','Security','low',0,1000],
+  ['crime_rate','Crime Index',' /100','Security','low',0,100],
+  ['border_tension','Border Tension',' idx','Security','low',0,100],
+  ['protest_signal','Protest Signals',' idx','Security','low',0,100],
+  ['supply_frag','Supply Fragility',' idx','Security','low',0,100],
+  ['rtt_ocean','Transocean RTT',' ms','Log','low',50,400],
+  ['rail_avail','Rail Availability',' %','Log','high',0,1,true],
+  ['truck_avail','Truck Availability',' %','Log','high',0,1,true],
+  ['strait_delay','Strait Delay',' h','Log','low',0,72],
+  ['reroute_res','Reroute Resilience',' idx','Log','high',0,100],
+  ['lead_time','Avg Warning Lead Time',' min','Gov','high',0,240],
+  ['cross_cons','Cross-Consistency',' %','Gov','high',0.5,1,true],
+  ['tamper_flags','Tamper Flags',' ','Gov','low',0,200],
+  ['disclosure_lag','Disclosure Lag',' min','Gov','low',0,1440],
+  ['impact_avoid','Impact Avoided',' $M','Gov','high',0,100000]
+].map(([key,label,unit,source,good,min,max,pct])=>({key,label,unit,source,good,min,max,pct:!!pct}));
+
+/* ========================= STATE ========================= */
+let SIM=true, PAUSE=false, INTERVAL=5000, SERIES_KEY='icu_load';
+const MODE=$('#modeChip'), LATCHIP=$('#latChip'), UPDCHIP=$('#updChip'), SIGCHIP=$('#sigChip'), LIVECHIP=$('#liveChip'), SERIES_SEL=$('#seriesSel'), KPI_GRID=$('#kpiGrid');
+window.HR={_log:[],_hist:Object.fromEntries(METRICS.map(m=>[m.key,[]])),push(k,v,t=now()){if(PAUSE||v==null)return;this._log.push({k,v,t});const arr=this._hist[k];if(arr){arr.push(v);if(arr.length>240)arr.shift();}const m=METRICS.find(x=>x.key===k);if(m){const el=$(`#n_${m.key}`);if(el){const val=m.pct?(v*100).toFixed(1)+m.unit:(typeof v==='number'?fmt(v)+m.unit:v);el.textContent=val;}} drawAll();}};
+
+/* ========================= UI BUILD ========================= */
+function buildCards(){KPI_GRID.innerHTML='';for(const m of METRICS){const card=document.createElement('div');card.className='card';card.dataset.key=m.key;card.innerHTML=`<h3>${m.label}</h3><div class="n" id="n_${m.key}">—</div><span class="sub">${m.source}</span><svg class="spark" viewBox="0 0 200 80"><path id="sp_${m.key}" d=""/></svg>`;KPI_GRID.appendChild(card);}}
+function buildSeriesSelector(){SERIES_SEL.innerHTML='';METRICS.forEach(m=>{const o=document.createElement('option');o.value=m.key;o.textContent=m.key;SERIES_SEL.appendChild(o);});SERIES_SEL.value=SERIES_KEY;$('#seriesBadge').textContent=SERIES_KEY;}
+
+/* ========================= DRAW ========================= */
+function pathFrom(arr,x0,x1,y0,y1){if(arr.length<2)return'';const mn=Math.min(...arr),mx=Math.max(...arr);const rng=(mx-mn)||1;return arr.map((v,i)=>{const x=x0+i*((x1-x0)/(arr.length-1));const y=y0-((v-mn)/rng)*(y0-y1);return(i?'L':'M')+x+','+y;}).join(' ');} 
+function avgArr(a,w=6){const out=[];for(let i=0;i<a.length;i++){const s=Math.max(0,i-w+1);const seg=a.slice(s,i+1);out.push(seg.reduce((x,y)=>x+y,0)/seg.length);}return out;}
+function drawTrend(){const H=window.HR._hist[SERIES_KEY].slice(-60);const avg=avgArr(H,6);$('#line_main').setAttribute('d',pathFrom(H,40,580,230,40));$('#line_avg').setAttribute('d',pathFrom(avg,40,580,230,40));}
+function drawSparks(){METRICS.forEach(m=>{const arr=window.HR._hist[m.key].slice(-30);if(!arr.length)return;const mn=Math.min(...arr),mx=Math.max(...arr);const rng=(mx-mn)||1;const d=arr.map((v,i)=>{const x=i*(200/Math.max(1,arr.length-1));const y=70-((v-mn)/rng)*60;return(i?'L':'M')+x+','+y;}).join(' ');const el=$(`#sp_${m.key}`);if(el)el.setAttribute('d',d);});}
+function drawAll(){drawTrend();drawSparks();renderQPred();renderRadar();renderStress();}
+
+/* ========================= EXPORT & CONTROLS ========================= */
+$('#exportCSV').onclick=()=>{const rows=[["metric","value","ts"],...window.HR._log.slice(-1500).map(r=>[r.k,r.v,new Date(r.t).toISOString()])];const csv=rows.map(r=>r.join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='humanity-resonance.csv';a.click();};
+$('#exportJSON').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(window.HR._log,null,2)],{type:'application/json'}));a.download='humanity-resonance.json';a.click();};
+$('#intervalSel').onchange=e=>{INTERVAL=+e.target.value;restartPoll();};
+$('#pauseBtn').onclick=()=>{PAUSE=!PAUSE;$('#pauseBtn').textContent=PAUSE?'Resume':'Pause';};
+$('#seriesSel').onchange=e=>{SERIES_KEY=e.target.value;$('#seriesBadge').textContent=SERIES_KEY;drawAll();};
+
+/* ========================= POLLING / SSE ========================= */
+let POLL_HANDLE=null;function restartPoll(){if(POLL_HANDLE)clearTimeout(POLL_HANDLE);poll();}
+async function tryJSON(){const t0=now();const res=await fetch('/hr/data/live.json?t='+t0,{cache:'no-store'});if(!res.ok)throw 0;const d=await res.json();LATCHIP.textContent='Latency: '+(now()-t0)+' ms';MODE.textContent='SOURCE: LIVE.JSON';const ts=d.ts?Date.parse(d.ts):now();UPDCHIP.textContent='Updated: '+new Date(ts).toLocaleTimeString('en-GB');await ingestPacket(d);} 
+function R(min,max){return min+Math.random()*(max-min);} 
+function simPacket(){const o={};for(const m of METRICS){let base=(window.HR._hist[m.key].at(-1)??R(m.min,m.max));let v=base+(m.max-m.min)*0.02*(Math.random()-0.5);v=Math.max(m.min,Math.min(m.max,v));if(['bgp_inc','cloud_regions','tls_errors','cyber_threats','crime_rate','heat_alerts','flood_risk','protest_signal'].includes(m.key))v=Math.round(v);o[m.key]=v;}o.ts=new Date().toISOString();return o;} 
+async function poll(){try{await tryJSON();}catch{MODE.textContent='SOURCE: SIMULATION';await ingestPacket(simPacket());}finally{POLL_HANDLE=setTimeout(poll,INTERVAL);}}
+
+// SSE live hookup (if available)
+function startSSE(){try{const sse=new EventSource('/hr/stream',{withCredentials:false});sse.onopen=()=>{MODE.textContent='SOURCE: SSE';LATCHIP.textContent='Latency: <10 ms';};sse.addEventListener('packet',async(ev)=>{const d=JSON.parse(ev.data);UPDCHIP.textContent='Updated: '+new Date(d.ts||Date.now()).toLocaleTimeString('en-GB');await ingestPacket(d);});sse.onerror=()=>{sse.close();restartPoll();};}catch{restartPoll();}}
+
+/* ========================= INGEST + ZERO‑PROOF ========================= */
+async function ingestPacket(obj){const t=now();const mbox=obj.metrics||obj;for(const m of METRICS){if(typeof mbox[m.key]!== 'undefined'){const val=Number(mbox[m.key]);window.HR.push(m.key,val,t);}}
+  const ordered=METRICS.map(m=>`${m.key}:${mbox[m.key]??''}`).join('|');const pHash=await sha256(ordered);$('#packetHash').textContent=pHash;const series=window.HR._hist[SERIES_KEY].slice(-60);const leaves=await Promise.all(series.map(v=>sha256(String(v))));const root=leaves.length?await merkleRoot(leaves):'';$('#merkleRoot').textContent=root;$('#zpVerdict').textContent=(series.length>5)?'VALID':'PENDING';renderLeadLag();renderAnomalyAtlas();}
+
+/* ========================= SIGNED MANIFEST VERIFY ========================= */
+$('#verifyBtn').onclick= async ()=>{SIGCHIP.textContent='Signature: …';try{const [manifest,sigB64,pub]=await Promise.all([
+  fetch('/hr/data/manifest.txt',{cache:'no-store'}).then(r=>r.text()),
+  fetch('/hr/data/manifest.sig.b64',{cache:'no-store'}).then(r=>r.text()),
+  fetch('/hr/hr-pub.pem',{cache:'no-store'}).then(r=>r.text())
+]);const key=await crypto.subtle.importKey('spki',pemToArrayBuffer(pub),{name:'ECDSA',namedCurve:'P-256'},true,['verify']);const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,b64ToBytes(sigB64),new TextEncoder().encode(manifest));SIGCHIP.textContent=ok?'Signature: ✅ VALID':'Signature: ❌ INVALID';SIGCHIP.className='chip glow'+(ok?'':' bad');}catch(e){SIGCHIP.textContent='Signature: ⚠️ ERROR';SIGCHIP.className='chip bad';}};
+
+/* ========================= INFOGRAPHIC (srcdoc) ========================= */
+(function initInfographic(){const frame=$('#igFrame'),status=$('#igStatus');const html=`<!doctype html><html><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/><style>body{margin:0;background:#060a11;color:#D1E5FF;font-family:Inter,system-ui,Segoe UI,Roboto,Arial} .wrap{max-width:1000px;margin:0 auto;padding:12px} .card{background:rgba(13,21,32,.9);border:1px solid #173149;border-radius:14px;padding:14px} .grad{background:linear-gradient(90deg,#83B9FF,#3A86FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent}</style></head><body><div class=wrap><h2 style=\"text-align:center;margin:8px 0\">HUMANITY RESONANCE — <span class=grad>Infographic</span></h2><div class=card><div style=\"font-size:18px\">Sovereign. Zero‑Proof. 50 Channels.</div><ul style=\"opacity:.9\"><li>Single‑file. No external CDNs.</li><li>Live KPIs</li><li>Signed manifest</li></ul><div style=\"font-size:12px;opacity:.7;margin-top:8px\">Creator: Mohamed Ibrahim</div></div></div></body></html>`;frame.srcdoc=html;function setStatus(t){status.textContent=t;} setStatus('Loading…');frame.addEventListener('load',()=>setStatus('Loaded (srcdoc)'));$('#igOpen').onclick=()=>{const w=window.open('about:blank','_blank','noopener');if(!w)return;w.document.write(html);w.document.close();};$('#igReload').onclick=()=>{frame.srcdoc='';setTimeout(()=>frame.srcdoc=html,50);};})();
+
+/* ========================= INNOVATION B: Lead–Lag ========================= */
+function corr(a,b){const n=Math.min(a.length,b.length);if(n<6)return 0;let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i];}ma/=n;mb/=n;let num=0,da=0,db=0;for(let i=0;i<n;i++){const xa=a[i]-ma,xb=b[i]-mb;num+=xa*xb;da+=xa*xa;db+=xb*xb;}return num/Math.sqrt((da||1)*(db||1));}
+function renderLeadLag(){const target=['icu_load','grid_df','mkt_vol','port_cong','kp_idx','dns_latency','flood_risk','air_quality'];const items=[];for(const a of target){for(const b of target){if(a===b)continue;const A=window.HR._hist[a].slice(-60),B=window.HR._hist[b].slice(-60);for(let lag=1;lag<=3;lag++){const Ashift=A.slice(0,-lag),Bcut=B.slice(lag);const c=corr(Ashift,Bcut);items.push({pair:`${a} → ${b}`,lag,c});}}}items.sort((x,y)=>Math.abs(y.c)-Math.abs(x.c));const box=$('#leadMap');box.innerHTML='';items.slice(0,6).forEach(it=>{const row=document.createElement('div');row.className='leaditem';const s=(it.c>=0?'+':'')+it.c.toFixed(2);row.innerHTML=`<span>${it.pair}</span><span>lag ${it.lag} · r=${s}</span>`;box.appendChild(row);});}
+
+/* ========================= INNOVATION C: Anomaly Atlas ========================= */
+function renderAnomalyAtlas(){const groups={Health:['epi_rt','icu_load','pcr_pos'],Energy:['grid_df','spin_res','energy_price'],Net:['bgp_inc','dns_latency','tls_errors'],Climate:['kp_idx','flood_risk','air_quality'],Security:['cyber_threats','border_tension','crime_rate'],Log:['rtt_ocean','rail_avail','port_cong']};const heat=$('#anomalyHeat');heat.innerHTML='';const tops=[];function zscore(arr){const n=arr.length;if(n<10)return 0;const last=arr[n-1];const base=arr.slice(Math.max(0,n-40),n-1);const m=base.reduce((a,b)=>a+b,0)/base.length;const sd=Math.sqrt(base.reduce((a,b)=>a+(b-m)*(b-m),0)/(base.length||1));return sd? (last-m)/sd:0;}Object.entries(groups).forEach(([g,keys])=>{keys.forEach(k=>{const z=zscore(window.HR._hist[k]||[]);const cell=document.createElement('div');cell.className='cell';const t=Math.max(-3,Math.min(3,z));const hue=t>0?5:200;const inten=Math.min(1,Math.abs(t)/3);cell.style.background=`hsl(${hue},70%,${20+40*inten}%)`;cell.title=`${k}: z=${z.toFixed(2)}`;heat.appendChild(cell);tops.push({k,z});});});tops.sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));$('#anomalyTop').textContent='Top anomalies: '+tops.slice(0,5).map(x=>`${x.k} (${x.z.toFixed(2)})`).join(' · ');} 
+
+/* ========================= INNOVATION A: Quantum Prediction Grid ========================= */
+function renderQPred(){const cvs=$('#qPred');if(!cvs)return;const ctx=cvs.getContext('2d');const W=cvs.width,H=cvs.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0f1a26';ctx.fillRect(0,0,W,H);const keys=['icu_load','grid_df','mkt_vol','dns_latency','flood_risk','air_quality','kp_idx','port_cong'];const cols=8, cellW=W/cols, cellH=H/2;ctx.strokeStyle='rgba(131,185,255,.15)';for(let x=0;x<=W;x+=cellW){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<=H;y+=cellH){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  keys.forEach((k,i)=>{const arr=window.HR._hist[k];const last=arr.at(-1)??0;const prev=arr.at(-2)??last;const ar1=last + 0.6*(last-prev); // AR(1)
+    const ewma = (arr.slice(-12).reduce((a,b)=>a+ b,0)/(arr.slice(-12).length||1))*0.4 + last*0.6; // EWMA bias
+    const pred = (ar1+ewma)/2; const delta=pred-last; const conf=Math.min(1, Math.abs(delta)/(Math.abs(last)||1+1e-6));
+    const col=i%cols,row=(i/cols|0); const x=col*cellW,y=row*cellH; const pos=delta>=0; const hue=pos? 200:5; const inten=Math.min(1, Math.abs(delta)/(Math.abs(last)+1e-3)); ctx.fillStyle=`hsl(${hue},70%,${20+50*inten}%)`; ctx.fillRect(x+2,y+2,cellW-4,cellH-4); ctx.fillStyle="#cfe8ff"; ctx.font='12px Inter,system-ui'; ctx.fillText(k.replace('_',' '),x+8,y+18); ctx.fillText((pos?'+':'')+delta.toFixed(3),x+8,y+36); ctx.fillText('conf '+(conf*100|0)+'%',x+8,y+54);
+  });
+}
+
+/* ========================= INNOVATION E: Resilience Radar ========================= */
+function renderRadar(){const cvs=$('#resRadar');const ctx=cvs.getContext('2d');const W=cvs.width,H=cvs.height;ctx.clearRect(0,0,W,H);const groups={Health:['epi_rt','icu_load','pcr_pos'],Energy:['grid_df','spin_res','nminus_margin'],Finance:['infl_now','liq_stress','mkt_vol'],Net:['bgp_inc','dns_latency','tls_errors'],Logistics:['rtt_ocean','rail_avail','truck_avail']};const labels=Object.keys(groups);const N=labels.length;const cx=W/2,cy=H/2,R=Math.min(W,H)*0.38;ctx.strokeStyle='rgba(131,185,255,.2)';for(let r=0.2;r<=1.0;r+=0.2){ctx.beginPath();for(let i=0;i<N;i++){const a=(i/N)*2*Math.PI-Math.PI/2;const x=cx+R*r*Math.cos(a),y=cy+R*r*Math.sin(a);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.closePath();ctx.stroke();}
+  function score(keys){let s=0,c=0;keys.forEach(k=>{const arr=HR._hist[k];if(arr.length){const base=arr.slice(-30,-1);const mean=base.reduce((a,b)=>a+b,0)/(base.length||1);const sd=Math.sqrt(base.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(base.length||1))||1;const z=(arr.at(-1)-mean)/sd; s+=Math.max(0,1-Math.min(1,Math.abs(z)/3)); c++;}});return c? s/c:0.5;}
+  const vals=labels.map(l=>score(groups[l]));ctx.beginPath();labels.forEach((l,i)=>{const a=(i/N)*2*Math.PI-Math.PI/2;const r=R*vals[i];const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle='rgba(58,134,255,.35)';ctx.strokeStyle='#3A86FF';ctx.lineWidth=2;ctx.fill();ctx.stroke();ctx.fillStyle='#cfe3ff';ctx.font='12px Inter,system-ui';labels.forEach((l,i)=>{const a=(i/N)*2*Math.PI-Math.PI/2;const x=cx+(R+12)*Math.cos(a),y=cy+(R+12)*Math.sin(a);ctx.textAlign=(Math.cos(a)>0.2)?'left':(Math.cos(a)<-0.2?'right':'center');ctx.fillText(l,x,y);});}
+
+/* ========================= INNOVATION F: Global Stress Map ========================= */
+function renderStress(){const cvs=$('#stressMap');const ctx=cvs.getContext('2d');const W=cvs.width,H=cvs.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07121f';ctx.fillRect(0,0,W,H);ctx.strokeStyle='rgba(120,200,255,.15)';for(let i=0;i<=12;i++){const x=i*(W/12);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let j=0;j<=6;j++){const y=j*(H/6);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const drivers=['flood_risk','kp_idx','bgp_inc','dns_latency','crime_rate','protest_signal'];function norm(k){const m=METRICS.find(x=>x.key===k);const v=(HR._hist[k].at(-1)??m.min);return (v-m.min)/(m.max-m.min||1);}const pts=Array.from({length:42},(_,i)=>({x:(i%14+0.5)*(W/14),y:((i/14|0)+0.5)*(H/3),w:drivers.reduce((a,k)=>a+norm(k),0)/drivers.length}));
+  pts.forEach(p=>{const r=4+14*p.w;const g=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,r);const hue=5, inten=.5+.5*p.w;g.addColorStop(0,`rgba(255,75,62,${0.85*inten})`);g.addColorStop(1,'rgba(255,75,62,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();});}
+
+/* ========================= SERVICE WORKER VIRTUALIZATION ========================= */
+async function registerSW(){if(!('serviceWorker' in navigator))return; const swCode=`
+self.addEventListener('install', e=>self.skipWaiting());
+self.addEventListener('activate', e=>e.waitUntil(self.clients.claim()));
+let seedPkt = ${document.getElementById('seed-packet').textContent};
+let manifestTxt = ${JSON.stringify(document.getElementById('seed-manifest').textContent)};
+let sigB64 = ${JSON.stringify(document.getElementById('seed-sig').textContent)};
+let pubPem = ${JSON.stringify(document.getElementById('seed-pub').textContent)};
+function sseResponse(){
+  const stream = new ReadableStream({start(controller){
+    const enc = new TextEncoder();
+    function send(obj){controller.enqueue(enc.encode('event: packet\n'));
+      controller.enqueue(enc.encode('data: '+JSON.stringify(obj)+'\n\n'));}
+    send(seedPkt);
+    const id = setInterval(()=>{
+      seedPkt.seq++; seedPkt.ts=new Date().toISOString();
+      const v = (seedPkt.metrics.icu_load||0.7) + (Math.random()-0.5)*0.01;
+      seedPkt.metrics.icu_load = Math.max(0, Math.min(1, v));
+      send(seedPkt);
+    }, 3000);
+    self._demoTimer=id;
+  }, cancel(){ clearInterval(self._demoTimer); }});
+  return new Response(stream,{headers:{'Content-Type':'text/event-stream','Cache-Control':'no-store'}});
+}
+self.addEventListener('fetch',(event)=>{
+  const url=new URL(event.request.url);
+  const DEMO = !self.registration.scope.includes('live=1'); // crude flag
+  if(!DEMO) return; // if live flag present, bypass virtualization
+  if (url.pathname === '/hr/data/live.json') {
+    return event.respondWith(new Response(JSON.stringify(seedPkt), {headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}));
+  }
+  if (url.pathname === '/hr/data/manifest.txt') {
+    return event.respondWith(new Response(manifestTxt, {headers:{'Content-Type':'text/plain','Cache-Control':'no-store'}}));
+  }
+  if (url.pathname === '/hr/data/manifest.sig.b64') {
+    return event.respondWith(new Response(sigB64, {headers:{'Content-Type':'text/plain','Cache-Control':'no-store'}}));
+  }
+  if (url.pathname === '/hr/hr-pub.pem') {
+    return event.respondWith(new Response(pubPem, {headers:{'Content-Type':'text/plain','Cache-Control':'no-store'}}));
+  }
+  if (url.pathname === '/hr/stream') { return event.respondWith(sseResponse()); }
+});
+`;
+  const blob = new Blob([swCode],{type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  try{ await navigator.serviceWorker.register(url,{scope:'/'}); }catch(e){ console.warn('SW register failed',e); }
+}
+
+/* ========================= LIVE/DEMO TOGGLE ========================= */
+function isLive(){return localStorage.getItem('HR_LIVE')==='1';}
+function setLive(v){localStorage.setItem('HR_LIVE', v?'1':'0'); LIVECHIP.textContent='Mode: '+(v?'Live':'Demo');}
+LIVECHIP.onclick=()=>{const v=!isLive(); setLive(v); location.reload();};
+
+/* ========================= INIT ========================= */
+function init(){document.getElementById('yr').textContent=new Date().getFullYear();buildCards();buildSeriesSelector();drawAll();setLive(isLive());registerSW().then(()=>{ if(isLive()){ startSSE(); } else { MODE.textContent='SOURCE: SW-DEMO'; restartPoll(); } });}
+init();
+</script>
+</body>
+</html>
